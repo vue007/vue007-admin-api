@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vue007.admin.mapper.system.RoleMapper">
+    <resultMap id="roleMap" type="com.vue007.admin.model.system.Role">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="roleLevel" column="role_level"/>
+        <result property="description" column="description"/>
+    </resultMap>
+
+    <sql id="queryRoleCondition">
+        <where>
+            <if test="id != null and id != ''">
+                and id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="roleLevel != null and roleLevel != ''">
+                and role_level = #{roleLevel}
+            </if>
+            <if test="description != null and description != ''">
+                and description = #{description}
+            </if>
+
+        </where>
+    </sql>
+
+    <select id="getRoleByMap" parameterType="map" resultMap="roleMap">
+        SELECT * FROM role
+        <include refid="queryRoleCondition" />
+    </select>
+
+    <select id="getRoleById" parameterType="int" resultMap="roleMap">
+        SELECT * FROM zed_gbox_boss_role WHERE id =#{id}
+    </select>
+
+    <insert id="createRole" parameterType="com.vue007.admin.model.system.Role">
+        <selectKey resultType="java.lang.String"  order="AFTER" keyProperty="id" >
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO role(
+        id,
+        name,
+        role_level,
+        description
+        )VALUES(
+        #{id},
+        #{name},
+        #{roleLevel},
+        #{description}
+        )
+    </insert>
+
+    <update id="updateRole" parameterType="com.vue007.admin.model.system.Role">
+        UPDATE zed_gbox_boss_role SET
+        name = #{name},
+        role_level = #{roleLevel},
+        description = #{description}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteRole" parameterType="int">
+        DELETE FROM zed_gbox_boss_role WHERE id = #{id}
+    </delete>
+
+</mapper>

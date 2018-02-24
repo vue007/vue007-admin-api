@@ -1,0 +1,25 @@
+{
+  "AccessKeyID" :"LTAIND21Ub4HiRUg",
+  "AccessKeySecret" : "lp0S5FP5l5PxCug31TT6Jye8GHCibK",
+  "Endpoint":"oss-cn-shenzhen.aliyuncs.com",
+  "Bucket":"3d-community",
+  "RoleArn" : "acs:ram::1960811924775987:role/aliyunosstokengeneratorrole",
+  "TokenExpireTime" : "3600",
+  "RoleSessionName":"oss-3d-community",
+  "Policy" : {
+    "Statement": [
+      {
+        "Action": [
+          "oss:GetObject",
+          "oss:PutObject",
+          "oss:ListParts",
+          "oss:AbortMultipartUpload",
+          "oss:ListObjects"
+        ],
+        "Effect": "Allow",
+        "Resource": ["acs:oss:*:*:3d-community/*", "acs:oss:*:*:3d-community"]
+      }
+    ],
+    "Version": "1"
+  }
+}

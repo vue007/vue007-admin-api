@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vue007.admin.mapper.system.PermissionMapper">
+    <resultMap id="permissionMap" type="com.vue007.admin.model.system.Permission">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="url" column="url"/>
+        <result property="method" column="method"/>
+        <result property="description" column="description"/>
+    </resultMap>
+
+    <sql id="queryPermissionCondition">
+        <where>
+            <if test="id != null and id != ''">
+                and id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="url != null and url != ''">
+                and url = #{url}
+            </if>
+            <if test="method != null and method != ''">
+                and method = #{method}
+            </if>
+            <if test="description != null and description != ''">
+                and description = #{description}
+            </if>
+
+        </where>
+    </sql>
+
+    <select id="getPermissionByMap" parameterType="map" resultMap="permissionMap">
+        SELECT * FROM zed_gbox_boss_role_permission
+        <include refid="queryPermissionCondition" />
+    </select>
+
+    <select id="getPermissionById" parameterType="int" resultMap="permissionMap">
+        SELECT * FROM zed_gbox_boss_role_permission WHERE id =#{id}
+    </select>
+
+    <select id="getPermissionList"  resultMap="permissionMap">
+        SELECT * from zed_gbox_boss_role_permission
+    </select>
+
+    <select id="getPermissionByAdminId" parameterType="int" resultMap="permissionMap">
+        select p.*
+        from user u
+        LEFT JOIN zed_user_role ur on u.id= ur.User_id
+        LEFT JOIN zed_role r on ur.role_id=r.id
+        LEFT JOIN zed_role_permission rp on rp.role_id=r.id
+        LEFT JOIN zed_gbox_boss_role_permission p on p.id =rp.permission_id
+        where u.id=#{userId}
+    </select>
+
+    <insert id="createPermission" parameterType="com.vue007.admin.model.system.Permission">
+        <selectKey resultType="java.lang.String"  order="AFTER" keyProperty="id" >
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO zed_gbox_boss_role_permission(
+        id,
+        name,
+        url,
+        method,
+        description
+        )VALUES(
+        #{id},
+        #{name},
+        #{url},
+        #{method},
+        #{description}
+        )
+    </insert>
+
+    <update id="updatePermission" parameterType="com.vue007.admin.model.system.Permission">
+        UPDATE zed_gbox_boss_role_permission SET
+        name = #{name},
+        url = #{url},
+        method = #{method},
+        description = #{description}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deletePermission" parameterType="int">
+        DELETE FROM zed_gbox_boss_role_permission WHERE id = #{id}
+    </delete>
+
+</mapper>

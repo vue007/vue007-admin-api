@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vue007.admin.mapper.article.ArticleCategoryMapper">
+
+    <resultMap id="articleCategoryMap" type="com.vue007.admin.model.article.ArticleCategory">
+        <id property="id" column="category_id"/>
+        <result property="name" column="category_name"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+
+        <result property="categoryType" column="category_type" jdbcType="TINYINT"/>
+        <result property="parentId" column="parent_id"/>
+
+        <result property="articleCount" column="articleCount" jdbcType="INTEGER"/>
+        <result property="latestArticleUpdateTime" column="latestArticleUpdateTime" jdbcType="TIMESTAMP"/>
+
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="flag" column="flag" jdbcType="TINYINT"/>
+
+    </resultMap>
+
+    <select id="findPage" parameterType="com.vue007.admin.model.article.ArticleCategory" resultMap="articleCategoryMap">
+        SELECT
+            <include refid="Base_Column_List" />,
+            <include refid="colArticleCount" />,
+            <include refid="colLatestArticleUpdateTime" />
+        FROM
+          <include refid="Table_Name" /> ac
+        <where>
+            ac.flag = 1
+            <if test="keywords != null and keywords != ''">
+                AND ac.category_name LIKE CONCAT('%', #{keywords},'%')
+            </if>
+        </where>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY #{orderBy}
+            </when>
+            <otherwise>
+                ORDER BY ac.sort DESC, ac.update_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getById" parameterType="String" resultMap="articleCategoryMap">
+        SELECT
+          <include refid="Base_Column_List" />
+        FROM
+          <include refid="Table_Name" /> ac
+        WHERE
+          ac.category_id =#{id}
+    </select>
+
+    <select id="findByArticleId" parameterType="String" resultMap="articleCategoryMap">
+        SELECT
+          <include refid="Base_Column_List" />
+        FROM
+          <include refid="Table_Name" /> ac
+        INNER JOIN
+          bbs_article_category_relation acr
+        ON
+          ac.category_id = acr.category_id
+          AND acr.article_id = #{articleId}
+    </select>
+
+    <insert id="create" parameterType="com.vue007.admin.model.article.ArticleCategory">
+        <selectKey keyProperty="sort" resultType="Integer" order="BEFORE">
+            SELECT MAX(sort) + 1 FROM <include refid="Table_Name" />
+        </selectKey>
+
+        INSERT INTO <include refid="Table_Name" />
+        (
+            category_id,
+            category_name,
+            sort,
+            category_type,
+            parent_id,
+            create_user,
+            create_time,
+            update_user,
+            update_time
+        )
+        VALUES
+        (
+            #{id},
+            #{name},
+            #{sort},
+            #{categoryType},
+            #{parentId},
+            #{createUser},
+            #{createTime},
+            #{updateUser},
+            #{updateTime}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.vue007.admin.model.article.ArticleCategory">
+        UPDATE
+        <include refid="Table_Name" />
+        <set>
+            <if test="name != null and name != ''">
+                category_name = #{name},
+            </if>
+            <if test="categoryType != null and categoryType != ''">
+                category_type = #{categoryType},
+            </if>
+            <if test="parentId != null">
+                parent_id = #{parentId},
+            </if>
+            <if test="updateUser != null and updateUser != ''">
+                update_user = #{updateUser},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="flag != 0">
+                flag = #{flag},
+            </if>
+        </set>
+        WHERE
+          category_id = #{id}
+    </update>
+
+    <update id="sortBatch" parameterType="java.util.List">
+      UPDATE
+        <include refid="Table_Name" />
+      SET
+        sort = CASE category_id
+        <foreach collection="sortList" index="index" item="item">
+            WHEN #{item.id} THEN #{item.sort}
+        </foreach>
+        END
+      WHERE
+        category_id IN
+        <foreach collection="sortList" index="index" item="item" open="("  close=")" separator=",">
+          #{item.id}
+        </foreach>
+          <!--<foreach collection="sortMap" item="value" index="key" separator=";">-->
+              <!--UPDATE <include refid="Table_Name" /> set sort=#{value} WHERE category_id=#{key}-->
+          <!--</foreach>-->
+    </update>
+
+    <delete id="deleteById" parameterType="String">
+      DELETE FROM
+        <include refid="Table_Name" />
+      WHERE
+        category_id = #{id}
+    </delete>
+
+
+
+
+
+    <sql id="Base_Column_List">
+        ac.category_id,
+        ac.category_name,
+        ac.sort,
+        ac.category_type,
+        ac.parent_id,
+        ac.create_user,
+        ac.create_time,
+        ac.update_user,
+        ac.update_time,
+        ac.flag
+    </sql>
+    <sql id="colArticleCount">
+        (
+        SELECT
+        count(acr.relation_id)
+        FROM
+        bbs_article_category_relation acr
+        WHERE
+        (acr.category_id = ac.category_id or acr.category_id in (select category_id from bbs_article_category where parent_id = ac.category_id))
+        ) articleCount
+    </sql>
+    <sql id="colLatestArticleUpdateTime">
+        (
+        SELECT
+        MAX(a.update_time)
+        FROM
+        bbs_article_category_relation acr
+        LEFT JOIN bbs_article a ON a.article_id = acr.article_id
+        WHERE
+        (acr.category_id = ac.category_id or acr.category_id in (select category_id from bbs_article_category where parent_id = ac.category_id))
+        ) latestArticleUpdateTime
+    </sql>
+
+    <sql id="Table_Name">
+        bbs_article_category
+    </sql>
+
+
+    <!-- 二级分类 -->
+    <select id="findPages" parameterType="com.vue007.admin.model.article.ArticleCategory" resultMap="articleCategoryMap">
+        SELECT
+        <include refid="Base_Column_List" />,
+        <include refid="colArticleCount" />,
+        <include refid="colLatestArticleUpdateTime" />
+        FROM
+        <include refid="Table_Name" /> ac
+        <where>
+            ac.flag = 1
+            <if test="keywords != null and keywords != ''">
+                AND ac.category_name LIKE CONCAT('%', #{keywords},'%')
+            </if>
+            <if test="categoryType != null and categoryType != ''">
+                AND ac.category_type = #{categoryType}
+            </if>
+            <if test="parentId != null and parentId != ''">
+                AND ac.parent_id = #{parentId}
+            </if>
+        </where>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY #{orderBy}
+            </when>
+            <otherwise>
+                ORDER BY ac.sort DESC, ac.update_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

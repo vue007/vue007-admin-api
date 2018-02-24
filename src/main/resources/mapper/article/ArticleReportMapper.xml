@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vue007.admin.mapper.article.ArticleReportMapper">
+
+    <resultMap id="articleReportMap" type="com.vue007.admin.model.article.ArticleReport">
+        <id property="id" column="report_id"/>
+        <result property="content" column="content"/>
+        <result property="articleId" column="article_id"/>
+        <result property="userId" column="user_id"/>
+
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Table_Name">
+        bbs_article_report
+    </sql>
+
+    <sql id="Base_Column_List">
+        a.report_id,
+        a.user_id,
+        a.article_id,
+        a.content,
+        a.create_time,
+        a.status
+    </sql>
+
+    <select id="findPage" parameterType="com.vue007.admin.model.article.ArticleReport" resultMap="articleReportMap">
+        SELECT
+          <include refid="Base_Column_List" />
+        FROM
+          <include refid="Table_Name" /> a
+        <where>
+            <if test="keywords != null and keywords != ''">
+                AND a.content LIKE CONCAT('%', #{keywords},'%')
+            </if>
+        </where>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY #{orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getById" parameterType="String" resultMap="articleReportMap">
+        SELECT
+          <include refid="Base_Column_List" />
+        FROM
+          <include refid="Table_Name" /> a
+        WHERE
+          a.report_id =#{id}
+    </select>
+
+    <update id="update" parameterType="com.vue007.admin.model.article.ArticleReport">
+        UPDATE
+        <include refid="Table_Name" />
+        <set>
+            <if test="content != null and content != ''">
+                content = #{content},
+            </if>
+            <if test="updateTime != null and updateTime != ''">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        WHERE
+          report_id = #{id}
+    </update>
+
+    <update id="deleteById" parameterType="String">
+      DELETE FROM
+        <include refid="Table_Name" />
+      WHERE
+        report_id = #{id}
+    </update>
+
+</mapper>

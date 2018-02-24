@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vue007.admin.mapper.topic.TopicCommentMapper">
+
+    <resultMap id="topicCommentMap" type="com.vue007.admin.model.topic.TopicComment">
+        <id property="id" column="comment_id"/>
+        <result property="commentedId" column="commented_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="topicId" column="topic_id"/>
+        <result property="content" column="content" />
+        <result property="likeCount" column="like_count" jdbcType="INTEGER" />
+
+        <result property="status" column="status" jdbcType="TINYINT" />
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Table_Name">
+        bbs_topic_comment
+    </sql>
+
+    <sql id="Base_Column_List">
+        a.comment_id,
+        a.commented_id,
+        a.user_id,
+        a.topic_id,
+        a.content,
+        a.like_count,
+
+        a.status,
+        a.create_time,
+        a.update_time
+    </sql>
+
+    <select id="findPage" parameterType="com.vue007.admin.model.topic.TopicComment" resultMap="topicCommentMap">
+        SELECT
+          <include refid="Base_Column_List" />
+        FROM
+          <include refid="Table_Name" /> a
+        <where>
+            <if test="keywords != null and keywords != ''">
+                AND a.content LIKE CONCAT('%', #{keywords},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getById" parameterType="String" resultMap="topicCommentMap">
+        SELECT
+          <include refid="Base_Column_List" />
+        FROM
+          <include refid="Table_Name" /> a
+        WHERE
+          a.comment_id =#{id}
+    </select>
+
+    <update id="update" parameterType="com.vue007.admin.model.topic.TopicComment">
+        UPDATE
+        <include refid="Table_Name" />
+        <set>
+            <if test="content != null and content != ''">
+                content = #{content},
+            </if>
+            <if test="updateTime != null and updateTime != ''">
+                update_time = #{updateTime},
+            </if>
+            status = #{status}
+        </set>
+        WHERE
+          comment_id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="String">
+      DELETE FROM
+        <include refid="Table_Name" />
+      WHERE
+        comment_id = #{id}
+    </delete>
+
+</mapper>

@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vue007.admin.mapper.article.ArticleMapper">
+
+    <resultMap id="articleMap" type="com.vue007.admin.model.article.Article">
+        <id property="id" column="article_id"/>
+        <result property="title" column="title"/>
+        <result property="poster" column="poster"/>
+        <result property="content" column="content"/>
+        <result property="contentType" column="content_type" jdbcType="TINYINT"/>
+        <result property="userId" column="user_id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="clickCount" column="click_count" jdbcType="INTEGER"/>
+        <result property="likeCount" column="like_count" jdbcType="INTEGER"/>
+        <result property="favoritesCount" column="favorites_count" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+
+        <result property="categoryName" column="categoryName"/>
+        <result property="recommendId" column="recommendId"/>
+        <result property="categoryId" column="categoryId"/>
+        <result property="categoryType" column="categoryType"/>
+        <result property="relationId" column="relationId"/>
+
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="flag" column="flag" jdbcType="TINYINT"/>
+
+    </resultMap>
+
+    <sql id="Table_Name">
+        bbs_article
+    </sql>
+    <sql id="Recommend_Table_Name">
+        bbs_article_recommend
+    </sql>
+
+    <sql id="Base_Column_List">
+        a.article_id,
+        a.title,
+        a.poster,
+--         a.content,
+        a.content_type,
+        a.user_id,
+        a.nickname,
+        a.click_count,
+        a.like_count,
+        a.favorites_count,
+        a.status,
+        a.create_user,
+        a.create_time,
+        a.update_user,
+        a.update_time,
+        a.flag
+    </sql>
+
+    <select id="findPage" parameterType="com.vue007.admin.model.article.Article" resultMap="articleMap">
+        SELECT
+            <include refid="Base_Column_List" />,
+            ac.category_name categoryName,
+            ac.category_type categoryType,
+            ar.recommend_id recommendId
+        FROM
+            <include refid="Table_Name" /> a
+            LEFT JOIN bbs_article_category_relation acr ON a.article_id = acr.article_id
+            LEFT JOIN bbs_article_category ac ON acr.category_id = ac.category_id
+            LEFT JOIN bbs_article_recommend ar ON a.article_id = ar.article_id
+        <where>
+            a.flag = 1
+            <if test="categoryId != null and categoryId != ''">
+                AND ac.category_id = #{categoryId}
+            </if>
+            <if test="categoryType != null and categoryType != ''">
+                AND ac.category_type = #{categoryType}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            <if test="keywords != null and keywords != ''">
+                AND a.title LIKE CONCAT('%', #{keywords},'%')
+            </if>
+        </where>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY #{orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getById" parameterType="String" resultMap="articleMap">
+        SELECT
+            <include refid="Base_Column_List" />,
+            a.content,
+            ac.category_name categoryName,
+            ac.category_type categoryType,
+            ac.category_id categoryId,
+            acr.relation_id relationId
+        FROM
+            <include refid="Table_Name" /> a
+            LEFT JOIN bbs_article_category_relation acr ON a.article_id = acr.article_id
+            LEFT JOIN bbs_article_category ac ON acr.category_id = ac.category_id
+        WHERE
+          a.article_id =#{id}
+    </select>
+
+    <select id="countByCategoryId" parameterType="String" resultType="int">
+        SELECT
+            IFNULL(count(*), 0)
+        FROM
+            bbs_article_category_relation
+        WHERE
+            category_id = #{categoryId}
+    </select>
+
+    <insert id="create" parameterType="com.vue007.admin.model.article.Article">
+        INSERT INTO <include refid="Table_Name" />
+        (
+            article_id,
+            title,
+            poster,
+            poster_little,
+            content,
+            <if test="contentType != null ">
+                content_type,
+            </if>
+            user_id,
+            nickname,
+            create_user,
+            create_time
+        )
+        VALUES
+        (
+            #{id},
+            #{title},
+            #{poster},
+            #{poster},
+            #{content},
+            <if test="contentType != null ">
+                #{contentType},
+            </if>
+            #{userId},
+            ( SELECT u.nickname from bbs_user u where u.user_id = #{userId} ),
+            #{createUser},
+            #{createTime}
+        )
+
+        ;
+
+        INSERT INTO bbs_article_category_relation
+        (
+            relation_id,
+            category_id,
+            article_id,
+            create_time
+        )
+        VALUES
+        (
+            #{relationId},
+            #{categoryId},
+            #{id},
+            #{createTime}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.vue007.admin.model.article.Article">
+        UPDATE
+        <include refid="Table_Name" />
+        <set>
+            <if test="title != null and title != ''">
+                title = #{title},
+            </if>
+            <if test="poster != null and poster != ''">
+                poster = #{poster},
+                poster_little = #{poster},
+            </if>
+            <if test="content != null and content != ''">
+                content = #{content},
+            </if>
+            <if test="contentType != null and contentType != ''">
+                content_type = #{contentType},
+            </if>
+            <if test="userId != null and userId != ''">
+                user_id = #{userId},
+                nickname = ( SELECT u.nickname from bbs_user u where u.user_id = #{userId} ),
+            </if>
+            <if test="clickCount != null and clickCount >= 0">
+                click_count = #{clickCount},
+            </if>
+            <if test="likeCount != null and likeCount >= 0">
+                like_count = #{likeCount},
+            </if>
+            <if test="favoritesCount != null and favoritesCount >= 0">
+                favorites_count = #{favoritesCount},
+            </if>
+            <if test="updateUser != null and updateUser != ''">
+                update_user = #{updateUser},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="flag != null and flag != 0">
+                flag = #{flag}
+            </if>
+        </set>
+        WHERE
+          article_id = #{id}
+
+        ;UPDATE bbs_article_category_relation
+        <set>
+            <if test="id != null and id != ''">
+                article_id = #{id},
+            </if>
+            <if test="categoryId != null and categoryId != ''">
+                category_id = #{categoryId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+        </set>
+        WHERE
+        relation_id = #{relationId}
+    </update>
+
+    <delete id="deleteById" parameterType="String">
+      DELETE FROM
+        <include refid="Table_Name" />
+      WHERE
+        article_id = #{id}
+    </delete>
+
+    <insert id="createRecommend" parameterType="com.vue007.admin.model.article.Article">
+        INSERT INTO <include refid="Recommend_Table_Name" />
+        (
+            article_id,
+            recommend_id,
+            create_user,
+            create_time
+        )
+        VALUES
+        (
+            #{id},
+            #{recommendId},
+            #{createUser},
+            #{createTime}
+        )
+    </insert>
+    <delete id="deleteRecommendById" parameterType="String">
+        DELETE FROM
+        <include refid="Recommend_Table_Name" />
+        WHERE
+        recommend_id = #{recommendId}
+    </delete>
+
+</mapper>

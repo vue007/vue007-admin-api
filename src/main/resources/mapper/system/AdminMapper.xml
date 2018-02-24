@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vue007.admin.mapper.system.AdminMapper">
+
+    <resultMap id="adminMap" type="com.vue007.admin.model.system.Admin">
+        <id property="id" column="admin_id"/>
+        <result property="nickname" column="nickname" />
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="lastLoginTime" column="last_login_time" jdbcType="TIMESTAMP"/>
+
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="createUser" column="create_user"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="flag" column="flag" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Table_Name">
+        bbs_admin
+    </sql>
+
+    <sql id="Base_Column_List">
+        a.admin_id,
+        a.nickname,
+        a.username,
+        a.last_login_time,
+        a.create_time,
+        a.create_user,
+        a.update_time,
+        a.update_user,
+        a.flag
+    </sql>
+
+    <select id="findPage" parameterType="com.vue007.admin.model.system.Admin" resultMap="adminMap">
+        SELECT
+          <include refid="Base_Column_List" />
+        FROM
+          <include refid="Table_Name" /> a
+        <where>
+            <if test="keywords != null and keywords != ''">
+                (
+                a.nickname LIKE CONCAT('%', #{keywords},'%') OR
+                a.username LIKE CONCAT('%', #{keywords},'%')
+                )
+            </if>
+        </where>
+        <choose>
+            <when test="orderBy != null and orderBy != ''">
+                ORDER BY #{orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getById" parameterType="String" resultMap="adminMap">
+        SELECT
+          <include refid="Base_Column_List" />,
+          a.password
+        FROM
+          <include refid="Table_Name" /> a
+        WHERE
+          a.admin_id =#{id}
+    </select>
+
+    <select id="getByUserName" parameterType="String" resultMap="adminMap">
+        SELECT
+          <include refid="Base_Column_List" />,
+          a.password
+        FROM
+          <include refid="Table_Name"/> a
+        WHERE
+          a.username= #{username}
+    </select>
+
+    <select id="getByUsernameNoId" resultMap="adminMap">
+        SELECT
+          <include refid="Base_Column_List" />,
+          a.password
+        FROM
+          <include refid="Table_Name"/> a
+        WHERE
+            a.username = #{username}
+            AND a.admin_id != #{excludeId}
+    </select>
+
+    <insert id="create" parameterType="com.vue007.admin.model.system.Admin">
+        INSERT INTO <include refid="Table_Name" />
+        (
+            admin_id,
+            nickname,
+            username,
+            password,
+            create_time,
+            update_time,
+            create_user,
+            update_user
+        )
+        VALUES
+        (
+            #{id},
+            #{nickname},
+            #{username},
+            #{password},
+            #{createTime},
+            #{updateTime},
+            #{createUser},
+            #{updateUser}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.vue007.admin.model.system.Admin">
+        UPDATE
+          <include refid="Table_Name" />
+        <set>
+            <if test="nickname != null and nickname != ''">
+                nickname = #{nickname},
+            </if>
+            <if test="username != null and username != ''">
+                username = #{username},
+            </if>
+            <if test="password != null and password != ''">
+                password = #{password},
+            </if>
+            <if test="lastLoginTime != null">
+                last_login_time = #{lastLoginTime},
+            </if>
+            <if test="updateUser != null and updateUser != ''">
+                update_user = #{updateUser},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        WHERE
+          admin_id = #{id}
+    </update>
+
+    <update id="setFlag" parameterType="com.vue007.admin.model.system.Admin">
+        UPDATE
+          <include refid="Table_Name" />
+        SET
+          update_user = #{updateUser},
+          update_time = #{updateTime},
+          flag = #{flag}
+        WHERE
+          admin_id= #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="String">
+        DELETE FROM
+          <include refid="Table_Name" />
+        WHERE
+          admin_id = #{id}
+    </delete>
+
+</mapper>

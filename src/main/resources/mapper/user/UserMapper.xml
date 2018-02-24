@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vue007.admin.mapper.user.UserMapper">
+
+    <resultMap id="userMap" type="com.vue007.admin.model.user.User">
+        <id property="id" column="user_id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="headImg" column="head_img"/>
+        <result property="userType" column="user_type" jdbcType="TINYINT"/>
+        <result property="status" column="status" jdbcType="TINYINT" />
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateUser" column="update_user" />
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Table_Name">
+        bbs_user
+    </sql>
+
+    <sql id="Base_Column_List">
+        a.user_id,
+        a.nickname,
+        a.head_img,
+        a.user_type,
+        a.status,
+        a.update_user,
+        a.update_time,
+        a.create_time
+    </sql>
+
+    <select id="findPage" parameterType="com.vue007.admin.model.user.User" resultMap="userMap">
+        SELECT
+          <include refid="Base_Column_List" />
+        FROM
+          <include refid="Table_Name" /> a
+        <where>
+            <if test="userType != null and userType != 99">
+                AND a.user_type = #{userType}
+            </if>
+            <if test="keywords != null and keywords != ''">
+                AND a.nickname LIKE CONCAT('%', #{keywords},'%')
+            </if>
+        </where>
+        ORDER BY
+          a.update_time DESC, a.create_time DESC
+    </select>
+
+    <select id="getById" parameterType="String" resultMap="userMap">
+        SELECT
+          <include refid="Base_Column_List" />
+        FROM
+          <include refid="Table_Name" /> a
+        WHERE
+          a.user_id =#{id}
+    </select>
+
+    <insert id="create" parameterType="com.vue007.admin.model.user.User">
+        INSERT INTO <include refid="Table_Name" />
+        (
+            user_id,
+            nickname,
+            head_img,
+            user_type,
+            create_time
+        )
+        VALUES
+        (
+            #{id},
+            #{nickname},
+            #{headImg},
+            #{userType},
+            #{createTime}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.vue007.admin.model.user.User">
+        UPDATE
+        <include refid="Table_Name" />
+        <set>
+            <if test="nickname != null and nickname != ''">
+                nickname = #{nickname},
+            </if>
+            <if test="headImg != null and headImg != ''">
+                head_img = #{headImg},
+            </if>
+            <if test="updateUser != null and updateUser != ''">
+                update_user = #{updateUser},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime}
+            </if>
+        </set>
+        WHERE
+          user_id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="String">
+      DELETE FROM
+        <include refid="Table_Name" />
+      WHERE
+        user_id = #{id}
+    </delete>
+    
+    <update id="changeStatus" parameterType="com.vue007.admin.model.user.User">
+        UPDATE
+          <include refid="Table_Name"/> a
+        SET
+          a.status = #{status},
+          a.update_user = #{updateUser},
+          a.update_time = #{updateTime}
+        WHERE
+          a.user_id = #{id}
+    </update>
+
+</mapper>
