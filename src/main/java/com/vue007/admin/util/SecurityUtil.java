@@ -21,11 +21,10 @@ public class SecurityUtil {
     public static String encryptStationPassword(String passwordStr){
         String str = null;
         try {
-//            str = MD5.getInstance().getHexMD5(passwordStr);
-            str = com.zed.common.security.MD5.convert32(passwordStr);
+            str = MD5.getInstance().getHexMD5(passwordStr);
         } catch (Exception e){
             throw new RuntimeException("密码MD5加密出错..."+e.getMessage());
         }
-        return str.substring(6,22);
+        return str;
     }
 }

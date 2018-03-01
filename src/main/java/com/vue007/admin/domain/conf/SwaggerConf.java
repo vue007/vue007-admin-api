@@ -31,7 +31,7 @@ public class SwaggerConf extends WebMvcConfigurerAdapter {
         Docket docket = new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.zed.bbs.admin.controller"))
+                .apis(RequestHandlerSelectors.basePackage("com.vue007.admin.controller"))
                 .apis((input -> input != null && !"exception-controller".equalsIgnoreCase(input.groupName())))
                 .paths(PathSelectors.any())
                 .build()

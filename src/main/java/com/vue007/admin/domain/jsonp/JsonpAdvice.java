@@ -21,7 +21,7 @@ import java.io.IOException;
  * @author Xie Gengcai
  * @date 2017/6/23
  */
-@ControllerAdvice(basePackages = "com.zed.bbs.admin.controller")
+@ControllerAdvice(basePackages = "com.vue007.admin.controller")
 public class JsonpAdvice extends AbstractJsonpResponseBodyAdvice {
 
     protected JsonpAdvice() {

@@ -5,8 +5,6 @@ import com.github.pagehelper.PageInfo;
 import com.vue007.admin.service.user.UserService;
 import com.vue007.admin.domain.jsonp.StatusCode;
 import com.vue007.admin.model.user.User;
-import com.vue007.admin.model.user.UserAudit;
-import com.vue007.admin.service.user.UserAuditService;
 import io.swagger.annotations.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,9 +21,6 @@ public class UserController {
 
     @Resource
     private UserService userService;
-
-    @Resource
-    private UserAuditService userAuditService;
 
     @GetMapping("/list")
     public PageInfo<User> findPage(@ModelAttribute User param) {
@@ -84,24 +79,5 @@ public class UserController {
     @PostMapping("/status")
     public boolean status(@RequestBody User user) throws Exception {
         return userService.changeStatus(user.getId(), user.getStatus());
-    }
-
-    @ApiOperation(
-            value = "获取用户审核记录列表",
-            notes = "获取用户审核记录列表数据"
-    )
-    @GetMapping("/audit")
-    public PageInfo<UserAudit> findAuditPage(@ModelAttribute UserAudit param) {
-        PageHelper.startPage(param.getPageNum(), param.getPageSize());
-        return new PageInfo<>(userAuditService.findPage(param));
-    }
-
-    @ApiOperation(
-            value = "更新审核记录状态",
-            notes = "更新审核记录状态值，参数：审核ID id、审核状态 status"
-    )
-    @PostMapping("/audit/status")
-    public boolean changeAuditStatus(@RequestBody UserAudit userAudit) throws Exception {
-        return userAuditService.changeStatus(userAudit);
     }
 }

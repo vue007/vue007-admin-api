@@ -4,4 +4,4 @@
 *.iml
 target/
 target/**
-src/main/resources/ui/**
+src/main/resources/public/**

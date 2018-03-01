@@ -6,7 +6,7 @@
         <id property="id" column="admin_id"/>
         <result property="nickname" column="nickname" />
         <result property="username" column="username"/>
-        <result property="password" column="password"/>
+        <result property="password" column="pass                        word"/>
         <result property="lastLoginTime" column="last_login_time" jdbcType="TIMESTAMP"/>
 
         <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>

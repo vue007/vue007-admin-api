@@ -168,21 +168,6 @@
             <version>1.3.3</version>
         </dependency>
 
-
-        <!-- zed 公共依赖包 begin -->
-        <dependency>
-            <groupId>com.zed.common</groupId>
-            <artifactId>zed-common-utils</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-
         <!--Swagger API-->
         <dependency>
             <groupId>io.springfox</groupId>

@@ -146,5 +146,4 @@ public class ShiroConfiguration {
         return aASA;
     }
 
-
 }
